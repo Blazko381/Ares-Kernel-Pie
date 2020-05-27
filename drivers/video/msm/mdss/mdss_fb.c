@@ -67,7 +67,12 @@
 int backlight_min = 0;
 module_param(backlight_min, int, 0644);
 #define SMARTDIM_MIN 40
+int SMARTDIM_MIN = 0;
+module_param(SMARTDIM_MIN, int, 0644);
+
 #define SMARTDIM_PCC_MIN 6600	// minimum perceptible value of lowest brightness
+int SMARTDIM_PCC_MIN = 0;
+module_param(SMARTDIM_PCC_MIN, int, 0644);
 #define PCC_MAX 32768
 
 #define MAX_FBI_LIST 32
@@ -301,6 +306,9 @@ static void bl_to_pcc(int value)
 	u32 copyback = 0;
 
 	int pcc_intp = PCC_MAX + ((PCC_MAX - SMARTDIM_PCC_MIN) * (value - SMARTDIM_MIN)) / (SMARTDIM_MIN - 1);
+	// Apply min limits for SMARTDIM_PCC_MIN
+        if (value != 0 && value < SMARTDIM_PCC_MIN)
+                value = SMARTDIM_PCC_MIN;
 
 	memset(&pcc_cfg, 0, sizeof(struct mdp_pcc_cfg_data));
 	pcc_cfg.block = MDP_LOGICAL_BLOCK_DISP_0;
@@ -336,7 +344,7 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 		bl_to_pcc(value);
 
 	if (value < SMARTDIM_MIN && value != 0)
-		value = SMARTDIM_MIN;
+		value = backlight_min & value = SMARTDIM_MIN
 
 	/* This maps android backlight level 0 to 255 into
 	   driver backlight level 0 to bl_max with rounding */
