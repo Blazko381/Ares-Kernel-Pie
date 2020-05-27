@@ -52,7 +52,7 @@ if [ "$(grep -c Ares-Kernel- /proc/version)" -eq "1" ]; then
 	 echo 70 > /proc/sys/vm/swappiness
 	#
 	# Set Smart Dim
-	 echo '1' > /sys/class/graphics/fb0/smart_dim
+	 echo '0' > /sys/class/graphics/fb0/smart_dim
 	#
 	# Thermal
      echo 1 >  /sys/module/msm_thermal/parameters/enabled
@@ -128,7 +128,7 @@ if [ "$(grep -c Ares-Kernel- /proc/version)" -eq "1" ]; then
      echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
      chmod 666 /sys/module/lowmemorykiller/parameters/minfree
      chown root /sys/module/lowmemorykiller/parameters/minfree
-     echo "10240,14336,18432,34816,47104,55296" > /sys/module/lowmemorykiller/parameters/minfree
+     echo "15360,19456,23040,34816,41472,51200" > /sys/module/lowmemorykiller/parameters/minfree
 
     # VM
      echo 0 > /proc/sys/vm/oom_dump_tasks
