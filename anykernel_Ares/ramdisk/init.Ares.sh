@@ -107,14 +107,15 @@ if [ "$(grep -c Ares-Kernel- /proc/version)" -eq "1" ]; then
      echo '1267200' > /sys/devices/system/cpu/cpufreq/intelliactive/hispeed_freq
      
     # CPU Hotplug
-     echo 0 > /sys/kernel/alucard_hotplug/hotplug_enable
-     echo 0 > /sys/class/misc/mako_hotplug_control/enabled
-     echo 0 > /sys/module/intelli_plug/parameters/intelli_plug_active
-     echo 1 > /sys/module/lazyplug/parameters/lazyplug_active
-     echo 4 > /sys/module/lazyplug/parameters/nr_run_hysteresis
+	 echo 0 > /sys/kernel/alucard_hotplug/hotplug_enable
+	 echo 0 > /sys/class/misc/mako_hotplug_control/enabled
+	 echo 0 > /sys/module/intelli_plug/parameters/intelli_plug_active
+	 echo 1 > /sys/module/lazyplug/parameters/lazyplug_active
+	 echo 4 > /sys/module/lazyplug/parameters/nr_run_hysteresis
 	 echo 6 > /sys/module/lazyplug/parameters/nr_run_profile_sel
 	 echo 650 > /sys/module/lazyplug/parameters/cpu_nr_run_threshold
-     echo 4 > /sys/module/lazyplug/parameters/nr_possible_cores
+	 echo 4 > /sys/module/lazyplug/parameters/nr_possible_cores
+	 echo 0 > /sys/module/auto_hotplug/parameters/min_online_cpus
 	 	 
     # GPU
      echo 'msm_cpufreq' > /sys/class/kgsl/kgsl-3d0/devfreq/governor
