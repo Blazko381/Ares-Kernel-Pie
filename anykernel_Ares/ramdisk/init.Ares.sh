@@ -115,21 +115,20 @@ if [ "$(grep -c Ares-Kernel- /proc/version)" -eq "1" ]; then
 	 echo 6 > /sys/module/lazyplug/parameters/nr_run_profile_sel
 	 echo 650 > /sys/module/lazyplug/parameters/cpu_nr_run_threshold
 	 echo 4 > /sys/module/lazyplug/parameters/nr_possible_cores
-	 echo 0 > /sys/module/auto_hotplug/parameters/min_online_cpus
 	 	 
-    # GPU
-     echo 'msm_cpufreq' > /sys/class/kgsl/kgsl-3d0/devfreq/governor
+	# GPU
+	 echo 'msm_cpufreq' > /sys/class/kgsl/kgsl-3d0/devfreq/governor
 	 echo 27000000 > /sys/class/kgsl/kgsl-3d0/devfreq/min_freq
 	 echo 578000000 > /sys/class/kgsl/kgsl-3d0/max_gpuclk
 
-    # Display and LED
-     echo 0 > /sys/class/sec/led/led_fade
+	# Display and LED
+	 echo 0 > /sys/class/sec/led/led_fade
 
-    # LMK
-     echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
-     chmod 666 /sys/module/lowmemorykiller/parameters/minfree
-     chown root /sys/module/lowmemorykiller/parameters/minfree
-     echo "15360,19456,23040,34816,41472,51200" > /sys/module/lowmemorykiller/parameters/minfree
+	# LMK
+	 echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk
+	 chmod 666 /sys/module/lowmemorykiller/parameters/minfree
+	 chown root /sys/module/lowmemorykiller/parameters/minfree
+	 echo "15360,19456,23040,34816,41472,51200" > /sys/module/lowmemorykiller/parameters/minfree
 
     # VM
      echo 0 > /proc/sys/vm/oom_dump_tasks
