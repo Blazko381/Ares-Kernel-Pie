@@ -64,12 +64,12 @@ android_ver=$(file_getprop /system/build.prop "ro.build.version.release");
 ui_print " ";
 ui_print "Android $android_ver detected...";
 case "$android_ver" in
-7.1.1|8.1.0|9|10) support_status="supported";;
+8.1.0|9|10) support_status="supported";;
   *) support_status="unsupported";;
 esac;
 ui_print " ";
 if [ ! "$support_status" == "supported" ]; then
-  ui_print "This version of Ares-Kernel is only compatible with android versions 7.1.2 & 8.1.0 & 9 & 10!";
+  ui_print "This version of Ares-Kernel is only compatible with android versions 8.1.0 & 9 & 10!";
   exit 1;
 fi;
 
@@ -109,7 +109,7 @@ insert_line /system/vendor/etc/init/hw/init.qcom.rc "u:r:init:s0 root root -- /i
 insert_line /system/vendor/etc/init/hw/init.qcom.rc "u:r:supersu:s0 root root -- /init.Ares.sh" after "Post boot services" "    exec u:r:supersu:s0 root root -- /init.Ares.sh"
 insert_line /system/vendor/etc/init/hw/init.qcom.rc "root root -- /init.Ares.sh" after "Post boot services" "    exec u:r:supersu:s0 root root -- /init.Ares.sh"
 insert_line /system/vendor/etc/init/hw/init.qcom.rc "Execute Ares boot script..." after "Post boot services" "    # Execute Ares boot script..."
-replace_string /system/vendor/etc/init/hw/init.qcom.rc "setprop sys.io.scheduler zen" "setprop sys.io.scheduler bfq" "setprop sys.io.scheduler zen";																												
+replace_string /system/vendor/etc/init/hw/init.qcom.rc "setprop sys.io.scheduler zen" "setprop sys.io.scheduler bfq" "setprop sys.io.scheduler zen";
 fi;
 
 backup_file /system/bin/sysinit;
@@ -117,8 +117,8 @@ backup_file /system/xbin/sysinit;
 backup_file /system/etc/init/init_d.rc;
 replace_file /system/etc/init/init_d.rc 755 init_d.rc
 replace_file /system/bin/sysinit 755 aressysinit
-# end ramdisk changes
 
+# end ramdisk changes
 write_boot;
 
 ## end install
