@@ -336,7 +336,7 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 		bl_to_pcc(value);
 
 	if (value < SMARTDIM_MIN && value != 0)
-		value = backlight_min;
+		value = SMARTDIM_MIN;
 
 	/* This maps android backlight level 0 to 255 into
 	   driver backlight level 0 to bl_max with rounding */
