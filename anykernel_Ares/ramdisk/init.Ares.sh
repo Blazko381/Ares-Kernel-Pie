@@ -4,6 +4,7 @@
 # Ares-Kernel Boot Script
 # 
 # Author: sunilpaulmathew <sunil.kde@gmail.com>
+# Edited by @Blazko381
 #
 
 #
