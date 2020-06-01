@@ -38,7 +38,7 @@
  *  2001-11-16	Torsten Duwe <duwe@caldera.de>
  *		added context constructor/destructor hooks,
  *		needed by SiS driver's memory management.
- */
+ */#
 
 #include "drmP.h"
 
