@@ -37,23 +37,18 @@
 # ***** ***** *Variables to be configured manually* ***** ***** #
 
 # Toolchains
-GOOGLE="/home/skater187/toolchains/android-ndk-r15c/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/bin/arm-linux-androideabi-"
 
-UBERTC="/home/skater187/toolchains/venom-toolchain_9.2/bin/arm-none-eabi-"
+MUSL="/home/smg/Toolchains/GCC_9_musl/bin/armv7l-linux-musleabihf-"
 
-LINARO="/home/skater187/toolchains/arm-linux-androideabi-7.3-linaro/bin/arm-eabi-"
-
-MUSL="/home/smg/빌드/툴체인/musl-gcc/bin/armv7l-linux-musleabihf-"
-
-TOOLCHAIN="MUSL"	# Leave empty for using Google’s stock toolchain
+TOOLCHAIN=""	# Leave empty for using Musl toolchain
 
 ARCHITECTURE="arm"
 
 KERNEL_NAME="Ares-Kernel"
 
-KERNEL_VARIANT="all"	# options: klte, kltekor, kltedv, klteduos, kltekdi & all (build all the variants)
+KERNEL_VARIANT="klte"	# options: klte, kltekor, kltedv, klteduos, kltekdi & all (build all the variants)
 
-KERNEL_VERSION="Blazko-V1"   # leave as such, if no specific version tag
+KERNEL_VERSION="Blazko-V7-Pie"   # leave as such, if no specific version tag
 
 KERNEL_DEFCONFIG="Ares_@$KERNEL_VARIANT@_defconfig"
 
@@ -73,7 +68,7 @@ RELEASE_DIR="release_Ares"
 
 PREPARE_RELEASE=""
 
-NUM_CPUS=""   # number of cpu cores used for build (leave empty for auto detection)
+NUM_CPUS="2"   # number of cpu cores used for build (leave empty for auto detection)
 
 # ***** ***** ***** ***** ***THE END*** ***** ***** ***** ***** #
 
@@ -84,22 +79,13 @@ COLOR_NEUTRAL="\033[0m"
 export ARCH=$ARCHITECTURE
 
 if [ -z "$TOOLCHAIN" ]; then
-	echo -e $COLOR_GREEN"\n Initializing Google's stock toolchain...n"$COLOR_NEUTRAL
-	export CROSS_COMPILE="${CCACHE} $GOOGLE"
-elif [ "ubertc" == "$TOOLCHAIN" ]; then
-	echo -e $COLOR_GREEN"\n Initializing Bleeding-Edge-Toolchainn-9.x...\n"$COLOR_NEUTRAL
-	export CROSS_COMPILE="${CCACHE} $UBERTC"
-elif [ "linaro" == "$TOOLCHAIN" ]; then
-	echo -e $COLOR_GREEN"\n Initializing Linaro-7.x toolchain...\n"$COLOR_NEUTRAL
-	export CROSS_COMPILE="${CCACHE} $LINARO"
-elif [ "musl" == "$TOOLCHAIN" ]; then
-	echo -e $COLOR_GREEN"\n Initializing Musl toolchain...\n"$COLOR_NEUTRAL
+	echo -e $COLOR_GREEN"\n Initializing Musl toolchain...n"$COLOR_NEUTRAL
 	export CROSS_COMPILE="${CCACHE} $MUSL"
 fi
 
-export KBUILD_BUILD_USER=187-Mod-[The~Skater~187
+export KBUILD_BUILD_USER=SmgKhOaRn
 
-export KBUILD_BUILD_HOST=xda-developers.com]
+export KBUILD_BUILD_HOST=xda-developers.com
 
 if [ -z "$NUM_CPUS" ]; then
 	NUM_CPUS=`grep -c ^processor /proc/cpuinfo`
