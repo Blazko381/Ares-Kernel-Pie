@@ -53,12 +53,14 @@ if [ "$(grep -c Ares-Kernel- /proc/version)" -eq "1" ]; then
 	 echo 70 > /proc/sys/vm/swappiness
 	#
 	# Set Smart Dim
-	 echo '0' > /sys/class/graphics/fb0/smart_dim
+	 echo '1' > /sys/class/graphics/fb0/smart_dim
 	#
 	# Thermal
-     echo 1 >  /sys/module/msm_thermal/parameters/enabled
+     echo 0 >  /sys/module/msm_thermal/parameters/enabled
      echo 0 > /sys/module/msm_thermal/vdd_restriction/enabled
      echo 0 > /sys/module/msm_thermal/core_control/enabled
+     echo 1 > /sys/module/msm_thermal/core_control/enabled
+     echo 1 >  /sys/module/msm_thermal/parameters/enabled
      echo 80 > /sys/module/msm_thermal/parameters/freq_mitig_temp_degc
      echo 90 > /sys/module/msm_thermal/parameters/core_temp_limit_degC
      echo 85 > /sys/module/msm_thermal/parameters/hotplug_temp_degC

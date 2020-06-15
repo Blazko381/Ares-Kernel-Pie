@@ -1,4 +1,4 @@
-service init_d /system/bin/sh /system/bin/aressysinit
+service init_d /system/bin/sh /system/bin/sysinit
     user root
     group root
     disabled
@@ -7,5 +7,5 @@ service init_d /system/bin/sh /system/bin/aressysinit
 
 on property:sys.boot_completed=1 && property:sys.logbootcomplete=1
     start init_d
-    exec - root root -- /system/bin/aressysinit
-    exec_background u:r:magisk:s0 -- /system/bin/aressysinit
+    exec - root root -- /system/bin/sysinit
+    exec_background u:r:magisk:s0 -- /system/bin/sysinit
