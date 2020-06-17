@@ -64,6 +64,11 @@ static inline u64 ___siphash_aligned(const __le64 *data, size_t len,
 	if (__builtin_constant_p(len) && len == 24)
 		return siphash_3u64(le64_to_cpu(data[0]), le64_to_cpu(data[1]),
 				    le64_to_cpu(data[2]), key);
+	if (__builtin_constant_p(len) && len == 32)
+		return siphash_4u64(le64_to_cpu(data[0]), le64_to_cpu(data[1]),
+				    le64_to_cpu(data[2]), le64_to_cpu(data[3]),
+				    key);
+	return __siphash_aligned(data, len, key);
 }
 
 /**
