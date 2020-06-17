@@ -110,6 +110,9 @@ static int get_parent_ino(struct inode *inode, nid_t *pino)
 {
 	struct dentry *dentry;
 
+	if (file_enc_name(inode))
+		return 0;
+
 	inode = igrab(inode);
 	dentry = d_find_any_alias(inode);
 	iput(inode);
@@ -1203,8 +1206,6 @@ static int f2fs_zero_range(struct inode *inode, loff_t offset, loff_t len,
 		if (ret)
 			return ret;
 
-		if (offset + len > new_size)
-			new_size = offset + len;
 		new_size = max_t(loff_t, new_size, offset + len);
 	} else {
 		if (off_start) {
@@ -1269,8 +1270,9 @@ static int f2fs_insert_range(struct inode *inode, loff_t offset, loff_t len)
 	int ret = 0;
 
 	new_size = i_size_read(inode) + len;
-	if (new_size > inode->i_sb->s_maxbytes)
-		return -EFBIG;
+	ret = inode_newsize_ok(inode, new_size);
+	if (ret)
+		return ret;
 
 	if (offset >= i_size_read(inode))
 		return -EINVAL;
@@ -1494,9 +1496,9 @@ static int f2fs_ioc_setflags(struct file *filp, unsigned long arg)
 	if (ret)
 		return ret;
 
-	flags = f2fs_mask_flags(inode->i_mode, flags);
-
 	inode_lock(inode);
+
+	flags = f2fs_mask_flags(inode->i_mode, flags);
 
 	oldflags = fi->i_flags;
 
@@ -1511,10 +1513,11 @@ static int f2fs_ioc_setflags(struct file *filp, unsigned long arg)
 	flags = flags & FS_FL_USER_MODIFIABLE;
 	flags |= oldflags & ~FS_FL_USER_MODIFIABLE;
 	fi->i_flags = flags;
-	inode_unlock(inode);
 
 	inode->i_ctime = CURRENT_TIME;
 	f2fs_set_inode_flags(inode);
+
+	inode_unlock(inode);
 out:
 	mnt_drop_write_file(filp);
 	return ret;
@@ -1534,6 +1537,9 @@ static int f2fs_ioc_start_atomic_write(struct file *filp)
 
 	if (!inode_owner_or_capable(inode))
 		return -EACCES;
+
+	if (!S_ISREG(inode->i_mode))
+		return -EINVAL;
 
 	ret = mnt_want_write_file(filp);
 	if (ret)
@@ -1606,6 +1612,9 @@ static int f2fs_ioc_start_volatile_write(struct file *filp)
 
 	if (!inode_owner_or_capable(inode))
 		return -EACCES;
+
+	if (!S_ISREG(inode->i_mode))
+		return -EINVAL;
 
 	ret = mnt_want_write_file(filp);
 	if (ret)
@@ -2060,39 +2069,37 @@ static int f2fs_ioc_defragment(struct file *filp, unsigned long arg)
 	if (!S_ISREG(inode->i_mode))
 		return -EINVAL;
 
+	if (f2fs_readonly(sbi->sb))
+		return -EROFS;
+
+	if (copy_from_user(&range, (struct f2fs_defragment __user *)arg,
+							sizeof(range)))
+		return -EFAULT;
+
+	/* verify alignment of offset & size */
+	if (range.start & (F2FS_BLKSIZE - 1) || range.len & (F2FS_BLKSIZE - 1))
+		return -EINVAL;
+
+	if (unlikely((range.start + range.len) >> PAGE_SHIFT >
+					sbi->max_file_blocks))
+		return -EINVAL;
+
 	err = mnt_want_write_file(filp);
 	if (err)
 		return err;
 
-	if (f2fs_readonly(sbi->sb)) {
-		err = -EROFS;
-		goto out;
-	}
-
-	if (copy_from_user(&range, (struct f2fs_defragment __user *)arg,
-							sizeof(range))) {
-		err = -EFAULT;
-		goto out;
-	}
-
-	/* verify alignment of offset & size */
-	if (range.start & (F2FS_BLKSIZE - 1) ||
-		range.len & (F2FS_BLKSIZE - 1)) {
-		err = -EINVAL;
-		goto out;
-	}
-
 	err = f2fs_defragment_range(sbi, filp, &range);
+	mnt_drop_write_file(filp);
+
 	f2fs_update_time(sbi, REQ_TIME);
 	if (err < 0)
-		goto out;
+		return err;
 
 	if (copy_to_user((struct f2fs_defragment __user *)arg, &range,
 							sizeof(range)))
-		err = -EFAULT;
-out:
-	mnt_drop_write_file(filp);
-	return err;
+		return -EFAULT;
+
+	return 0;
 }
 
 long f2fs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
