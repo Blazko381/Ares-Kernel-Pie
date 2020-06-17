@@ -75,9 +75,8 @@ bool available_free_memory(struct f2fs_sb_info *sbi, int type)
 		int i;
 
 		for (i = 0; i <= UPDATE_INO; i++)
-			mem_size += sbi->im[i].ino_num *
-						sizeof(struct ino_entry);
-		mem_size >>= PAGE_SHIFT;
+			mem_size += (sbi->im[i].ino_num *
+				sizeof(struct ino_entry)) >> PAGE_SHIFT;
 		res = mem_size < ((avail_ram * nm_i->ram_thresh / 100) >> 1);
 	} else if (type == EXTENT_CACHE) {
 		mem_size = (atomic_read(&sbi->total_ext_tree) *
@@ -380,7 +379,6 @@ void get_node_info(struct f2fs_sb_info *sbi, nid_t nid, struct node_info *ni)
 	struct page *page = NULL;
 	struct f2fs_nat_entry ne;
 	struct nat_entry *e;
-	pgoff_t index;
 	int i;
 
 	ni->nid = nid;
@@ -406,21 +404,17 @@ void get_node_info(struct f2fs_sb_info *sbi, nid_t nid, struct node_info *ni)
 		node_info_from_raw_nat(ni, &ne);
 	}
 	up_read(&curseg->journal_rwsem);
-	if (i >= 0) {
-		up_read(&nm_i->nat_tree_lock);
+	if (i >= 0)
 		goto cache;
-	}
 
 	/* Fill node_info from nat page */
-	index = current_nat_addr(sbi, nid);
-	up_read(&nm_i->nat_tree_lock);
-
-	page = get_meta_page(sbi, index);
+	page = get_current_nat_page(sbi, start_nid);
 	nat_blk = (struct f2fs_nat_block *)page_address(page);
 	ne = nat_blk->entries[nid - start_nid];
 	node_info_from_raw_nat(ni, &ne);
 	f2fs_put_page(page, 1);
 cache:
+	up_read(&nm_i->nat_tree_lock);
 	/* cache nat entry */
 	down_write(&nm_i->nat_tree_lock);
 	cache_nat_entry(sbi, nid, &ne);
@@ -1387,9 +1381,6 @@ continue_unlock:
 			f2fs_wait_on_page_writeback(page, NODE, true);
 			BUG_ON(PageWriteback(page));
 
-			set_fsync_mark(page, 0);
-			set_dentry_mark(page, 0);
-
 			if (!atomic || page == last_page) {
 				set_fsync_mark(page, 1);
 				if (IS_INODE(page)) {
@@ -1804,9 +1795,6 @@ void build_free_nids(struct f2fs_sb_info *sbi)
 	struct f2fs_journal *journal = curseg->journal;
 	int i = 0;
 	nid_t nid = nm_i->next_scan_nid;
-
-	if (unlikely(nid >= nm_i->max_nid))
-		nid = 0;
 
 	/* Enough entries */
 	if (nm_i->fcnt >= NAT_ENTRY_PER_BLOCK)

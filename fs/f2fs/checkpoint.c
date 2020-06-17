@@ -274,11 +274,10 @@ static int f2fs_write_meta_pages(struct address_space *mapping,
 		get_pages(sbi, F2FS_DIRTY_META) < nr_pages_to_skip(sbi, META))
 		goto skip_write;
 
-	/* if locked failed, cp will flush dirty pages instead */
-	if (!mutex_trylock(&sbi->cp_mutex))
-		goto skip_write;
-
 	trace_f2fs_writepages(mapping->host, wbc, META);
+
+	/* if mounting is failed, skip writing node pages */
+	mutex_lock(&sbi->cp_mutex);
 	diff = nr_pages_to_write(sbi, META, wbc);
 	blk_start_plug(&plug);
 	written = sync_meta_pages(sbi, META, wbc->nr_to_write);
@@ -773,9 +772,7 @@ static void __add_dirty_inode(struct inode *inode, enum inode_type type)
 		return;
 
 	set_inode_flag(inode, flag);
-	if (!f2fs_is_volatile_file(inode))
-		list_add_tail(&F2FS_I(inode)->dirty_list,
-						&sbi->inode_list[type]);
+	list_add_tail(&F2FS_I(inode)->dirty_list, &sbi->inode_list[type]);
 	stat_inc_dirty_inode(sbi, type);
 }
 
@@ -919,7 +916,6 @@ retry_flush_dents:
 		err = sync_dirty_inodes(sbi, DIR_INODE);
 		if (err)
 			goto out;
-		cond_resched();
 		goto retry_flush_dents;
 	}
 
@@ -928,7 +924,6 @@ retry_flush_dents:
 		err = f2fs_sync_inode_meta(sbi);
 		if (err)
 			goto out;
-		cond_resched();
 		goto retry_flush_dents;
 	}
 
@@ -946,7 +941,6 @@ retry_flush_nodes:
 			f2fs_unlock_all(sbi);
 			goto out;
 		}
-		cond_resched();
 		goto retry_flush_nodes;
 	}
 out:
